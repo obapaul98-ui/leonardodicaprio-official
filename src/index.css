@@ -1,0 +1,266 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    color-scheme: light;
+    --bg: #FAF7F2;
+    --surface: #FFFFFF;
+    --surface-light: #F3EFEA;
+    --surface-card: #FFFFFF;
+    --text: #141414;
+    --text-muted: #555555;
+    --text-subtle: #777777;
+    --border: rgba(0, 0, 0, 0.08);
+    --border-strong: rgba(0, 0, 0, 0.16);
+    --accent: #F28C28;
+    --accent-hover: #e07d1e;
+    --panel-bg: rgba(255, 255, 255, 0.9);
+    --pill-bg: rgba(255, 255, 255, 0.88);
+    --card-shadow: 0 10px 30px -5px rgba(0, 0, 0, 0.06);
+    --nav-border: rgba(0, 0, 0, 0.08);
+  }
+
+  .dark, [data-theme="dark"] {
+    color-scheme: dark;
+    --bg: #06090e;
+    --surface: #0f1523;
+    --surface-light: #161f33;
+    --surface-card: #0f1523;
+    --text: #FFFFFF;
+    --text-muted: #94a3b8;
+    --text-subtle: #64748b;
+    --border: rgba(255, 255, 255, 0.08);
+    --border-strong: rgba(255, 255, 255, 0.16);
+    --accent: #F28C28;
+    --accent-hover: #ff9d42;
+    --panel-bg: rgba(15, 23, 42, 0.65);
+    --pill-bg: rgba(15, 23, 42, 0.7);
+    --card-shadow: 0 15px 35px -10px rgba(0, 0, 0, 0.6);
+    --nav-border: rgba(255, 255, 255, 0.12);
+  }
+
+  html {
+    background-color: var(--bg);
+    color: var(--text);
+    transition: background-color 250ms ease, color 250ms ease;
+  }
+  
+  body {
+    background-color: var(--bg);
+    color: var(--text);
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+    overflow-x: hidden;
+    transition: background-color 250ms ease, color 250ms ease;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    background: var(--bg);
+  }
+  ::-webkit-scrollbar-thumb {
+    background: var(--border-strong);
+    border-radius: 9999px;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    background: var(--accent);
+  }
+}
+
+/* Glassmorphic luxury effects using CSS variables */
+.glass-panel {
+  background: var(--panel-bg);
+  backdrop-filter: blur(16px);
+  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--border);
+  box-shadow: var(--card-shadow);
+  transition: background 250ms ease, border-color 250ms ease, box-shadow 250ms ease;
+}
+
+.glass-panel-glow {
+  background: var(--panel-bg);
+  backdrop-filter: blur(20px);
+  -webkit-backdrop-filter: blur(20px);
+  border: 1px solid rgba(242, 140, 40, 0.3);
+  box-shadow: 0 0 30px -10px rgba(242, 140, 40, 0.15);
+  transition: background 250ms ease, border-color 250ms ease, box-shadow 250ms ease;
+}
+
+.glass-pill {
+  background: var(--pill-bg);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  border: 1px solid var(--nav-border);
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.08);
+  transition: background 250ms ease, border-color 250ms ease, box-shadow 250ms ease;
+}
+
+.dark .glass-pill {
+  box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.4);
+}
+
+/* Typography gradients */
+.gold-text-gradient {
+  background: linear-gradient(135deg, #F28C28 0%, #d4af37 50%, #ca8a04 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.emerald-text-gradient {
+  background: linear-gradient(135deg, #059669 0%, #10b981 50%, #34d399 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.dark .emerald-text-gradient {
+  background: linear-gradient(135deg, #a7f3d0 0%, #34d399 50%, #059669 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+}
+
+.cinema-title {
+  font-family: 'Cinzel', 'Playfair Display', serif;
+  letter-spacing: 0.06em;
+}
+
+/* Fluid Sphere wave styling */
+.sphere-wave-glow {
+  filter: drop-shadow(0 0 45px rgba(242, 140, 40, 0.35)) drop-shadow(0 0 90px rgba(16, 185, 129, 0.2));
+}
+
+/* Noise overlay */
+.bg-noise {
+  background-image: radial-gradient(var(--border-strong) 1px, transparent 0);
+  background-size: 28px 28px;
+}
+
+/* Scrollbar utilities */
+.no-scrollbar::-webkit-scrollbar {
+  display: none;
+}
+.no-scrollbar {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
+
+/* Page fade transition */
+@keyframes fadeIn {
+  0% {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  100% {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+.animate-fadeIn {
+  animation: fadeIn 250ms cubic-bezier(0.16, 1, 0.3, 1) forwards;
+}
+
+/* =========================================================
+   LIGHT THEME OVERRIDES (when html is not .dark)
+   All colors come from CSS variables defined in :root
+   ========================================================= */
+html:not(.dark) {
+  background-color: var(--bg);
+  color: var(--text);
+}
+
+html:not(.dark) section:not(#hero) {
+  background-color: var(--bg);
+}
+
+/* Sections & container dark backgrounds map to --bg (except hero) */
+html:not(.dark) [class*="bg-[#05080e]"]:not(#hero *),
+html:not(.dark) [class*="bg-[#080b12]"]:not(#hero *),
+html:not(.dark) [class*="bg-[#080b11]"]:not(#hero *),
+html:not(.dark) [class*="bg-[#06090e]"]:not(#hero *),
+html:not(.dark) [class*="bg-[#090d16]"]:not(#hero *),
+html:not(.dark) [class*="bg-[#0a0e19]"]:not(#hero *),
+html:not(.dark) [class*="bg-[#0a0f1d]"]:not(#hero *),
+html:not(.dark) [class*="bg-[#050914]"]:not(#hero *) {
+  background-color: var(--bg) !important;
+}
+
+/* Cards & elevated surfaces map to --surface (#FFFFFF) except hero */
+html:not(.dark) [class*="bg-[#111625]"]:not(#hero *),
+html:not(.dark) [class*="bg-[#0c101c]"]:not(#hero):not(#hero *),
+html:not(.dark) [class*="bg-[#161f33]"]:not(#hero *),
+html:not(.dark) [class*="bg-slate-900"]:not(#hero *),
+html:not(.dark) [class*="bg-slate-950"]:not(#hero *) {
+  background-color: var(--surface) !important;
+  box-shadow: var(--card-shadow);
+}
+
+/* Borders in light mode (except hero) */
+html:not(.dark) [class*="border-slate-800"]:not(#hero *):not(#hero),
+html:not(.dark) [class*="border-slate-700"]:not(#hero *):not(#hero) {
+  border-color: var(--border) !important;
+}
+
+/* Headings and cinema titles in light mode (exclude hero) */
+html:not(.dark) h1:not(#hero *):not([class*="text-[#F28C28]"]):not([class*="gold-text-gradient"]):not([class*="emerald-text-gradient"]),
+html:not(.dark) h2:not(#hero *):not([class*="text-[#F28C28]"]):not([class*="gold-text-gradient"]):not([class*="emerald-text-gradient"]),
+html:not(.dark) h3:not(#hero *):not([class*="text-[#F28C28]"]):not([class*="gold-text-gradient"]):not([class*="emerald-text-gradient"]),
+html:not(.dark) h4:not(#hero *):not([class*="text-[#F28C28]"]):not([class*="gold-text-gradient"]):not([class*="emerald-text-gradient"]) {
+  color: var(--text) !important;
+}
+
+html:not(.dark) .cinema-title:not(#hero *):not([class*="text-[#F28C28]"]):not([class*="gold-text-gradient"]):not([class*="emerald-text-gradient"]) {
+  color: var(--text);
+}
+
+/* Secondary & Muted body text (exclude hero) */
+html:not(.dark) [class*="text-slate-100"]:not(#hero *):not(button):not(span[class*="text-white"]):not(.cinema-title),
+html:not(.dark) [class*="text-slate-200"]:not(#hero *):not(button):not(span[class*="text-white"]) {
+  color: var(--text) !important;
+}
+
+html:not(.dark) [class*="text-slate-300"]:not(#hero *),
+html:not(.dark) [class*="text-slate-400"]:not(#hero *) {
+  color: var(--text-muted) !important;
+}
+
+/* Hero text styling - 100% scoped to guarantee high contrast in ALL modes */
+#hero h1,
+.hero-movie-title {
+  color: #FFFFFF !important;
+  text-shadow: 0 2px 12px rgba(0, 0, 0, 0.6) !important;
+}
+
+#hero .hero-quote-line {
+  color: #F5B66B !important;
+}
+
+#hero .hero-desc-line {
+  color: rgba(255, 255, 255, 0.85) !important;
+}
+
+/* Retain white text for accent buttons and orange pills */
+html:not(.dark) button.bg-gradient-to-r,
+html:not(.dark) [class*="bg-[#F28C28]"] > span,
+html:not(.dark) [class*="bg-orange-500"],
+html:not(.dark) [class*="bg-emerald-600"] {
+  color: #ffffff !important;
+}
+
+
+
+/* Content sitting on a dark photographic backdrop keeps readable colours in both themes */
+.dark-scope {
+  --bg: #07090f;
+  --surface: rgba(14, 19, 32, 0.72);
+  --surface-light: rgba(14, 19, 32, 0.6);
+  --border: rgba(255, 255, 255, 0.13);
+  --text: #eef0f5;
+  --text-muted: #b9c1d0;
+  color: var(--text);
+}
+.dark-scope .text-\[\#141414\] { color: #ffffff !important; }
+.dark-scope .bg-\[var\(--surface\)\] { backdrop-filter: blur(8px); -webkit-backdrop-filter: blur(8px); }
