@@ -93,13 +93,13 @@ export const FanClubSection: React.FC = () => {
 
   const handleNewsletterSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    if (newsletterEmail) {
-      setIsSubscribed(true);
-      confetti({
-        particleCount: 60,
-        spread: 50,
-      });
-    }
+    if (!newsletterEmail) return;
+    setIsSubscribed(true);
+    if (!FAN_CLUB_EMAIL) return; // no inbox set up yet: show the "opening soon" message instead of a false confirmation
+    const subject = encodeURIComponent('Newsletter sign-up');
+    const body = encodeURIComponent(`Please add me to the newsletter.\n\nEmail: ${newsletterEmail}`);
+    window.location.href = `mailto:${FAN_CLUB_EMAIL}?subject=${subject}&body=${body}`;
+    confetti({ particleCount: 60, spread: 50 });
   };
 
   return (
@@ -359,7 +359,9 @@ export const FanClubSection: React.FC = () => {
 
           {isSubscribed ? (
             <div className="p-4 rounded-xl bg-emerald-950/50 border border-emerald-500/40 text-xs text-emerald-300 font-mono animate-fadeIn">
-              ✓ Subscribed! You will receive our next quarterly dispatch.
+              {FAN_CLUB_EMAIL
+                ? 'Your email app should now open with your sign-up ready to send. Thank you!'
+                : 'Newsletter sign-ups are opening soon, so we have not saved your email yet. Please check back shortly.'}
             </div>
           ) : (
             <form onSubmit={handleNewsletterSubmit} className="flex flex-col sm:flex-row gap-2.5 max-w-md mx-auto">

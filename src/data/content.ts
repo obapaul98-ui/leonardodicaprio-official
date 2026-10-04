@@ -178,7 +178,7 @@ export const CHARITY_PROJECTS: CharityProject[] = [
     impactMetric: '1/3 of Mountain Gorillas',
     impactLabel: 'Protected in their sanctuary',
     region: 'Democratic Republic of Congo',
-    image: '/assets/filmography/virunga-protection.jpg',
+    image: '/assets/charity/virunga.jpg',
     video: '/media/leo_dispatch.mp4',
     keyPartners: ['Virunga National Park', 'Jane Goodall Institute', 'European Union'],
     ctaUrl: 'https://virunga.org',
