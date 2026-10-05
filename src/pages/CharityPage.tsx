@@ -2,7 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import { Link } from 'react-router-dom';
 import confetti from 'canvas-confetti';
 import { ArrowDown, CheckCircle2, Globe2, HandHeart, Heart, Mail, Sparkles, Volume2, VolumeX } from 'lucide-react';
-import { DONATION_EMAIL } from '../config/site';
+import { submitForm } from '../lib/submitForm';
 import {
   CHARITY_STATS,
   CHARITY_STORY,
@@ -29,7 +29,7 @@ export const CharityPage: React.FC = () => {
   const [muted, setMuted] = useState(true);
   const [amount, setAmount] = useState('$50');
   const [form, setForm] = useState({ name: '', email: '', message: '' });
-  const [sent, setSent] = useState<'idle' | 'opened' | 'soon'>('idle');
+  const [sent, setSent] = useState<'idle' | 'sending' | 'sent' | 'error' | 'soon'>('idle');
   const [picked, setPicked] = useState<string[]>([]);
   const [pledgeName, setPledgeName] = useState('');
   const [pledged, setPledged] = useState(false);
@@ -56,24 +56,18 @@ export const CharityPage: React.FC = () => {
     v.play().catch(() => {});
   }, []);
 
-  const submitDonation = (e: React.FormEvent) => {
+  const submitDonation = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!DONATION_EMAIL) {
-      setSent('soon');
-      return;
-    }
-    const subject = encodeURIComponent(`Conservation Donation Inquiry [${amount}] from ${form.name}`);
-    const body = encodeURIComponent(
-      `Hello Charity Team,\n\n` +
-      `A new donation inquiry has been submitted through the official website.\n\n` +
-      `• Donation Amount: ${amount}\n` +
-      `• Full Name: ${form.name}\n` +
-      `• Email Address: ${form.email}\n\n` +
-      `Message / Project Preference:\n${form.message ? form.message : '(None provided)'}\n\n` +
-      `--\nLeonardo DiCaprio Official · leonardodicaprioofficial.com`
-    );
-    window.location.href = `mailto:${DONATION_EMAIL}?subject=${subject}&body=${body}`;
-    setSent('opened');
+    if (sent === 'sending') return;
+    setSent('sending');
+    const result = await submitForm('donation', {
+      amount,
+      name: form.name,
+      email: form.email,
+      message: form.message || '(none provided)',
+    });
+    if (result.ok) setSent('sent');
+    else setSent(result.reason === 'not-configured' ? 'soon' : 'error');
   };
 
   const submitPledge = (e: React.FormEvent) => {
@@ -248,7 +242,7 @@ export const CharityPage: React.FC = () => {
               </p>
               <div className="mt-6 flex items-center gap-2 text-sm" style={{ color: '#B9C1D0' }}>
                 <Mail className="w-4 h-4" style={{ color: '#34D399' }} />
-                <span>This form sends your message to our team. We do not take payments on this site.</span>
+                <span>Your message goes straight to our team. We do not take payments on this site.</span>
               </div>
             </div>
 
@@ -304,13 +298,16 @@ export const CharityPage: React.FC = () => {
                 style={{ color: '#FFFFFF' }}
               >
                 <HandHeart className="w-4 h-4" />
-                <span>Send my donation message</span>
+                <span>{sent === 'sending' ? 'Sending…' : 'Send my donation message'}</span>
               </button>
-              {sent === 'opened' && (
-                <p className="text-sm" style={{ color: '#6EE7B7' }}>Your email app should now open with your message ready to send. Thank you.</p>
+              {sent === 'sent' && (
+                <p className="text-sm" style={{ color: '#6EE7B7' }}>Thank you! Your message has been sent to our team, and we will reply with the details.</p>
               )}
               {sent === 'soon' && (
                 <p className="text-sm" style={{ color: '#FCD34D' }}>Donations are opening soon. Please check back shortly.</p>
+              )}
+              {sent === 'error' && (
+                <p className="text-sm" style={{ color: '#FCA5A5' }}>Sorry, something went wrong and your message was not sent. Please try again in a moment.</p>
               )}
             </form>
           </div>

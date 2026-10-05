@@ -2,7 +2,7 @@ import React, { useState } from 'react';
 import { Sparkles, Award, CheckCircle, ArrowRight, Download, HelpCircle, Mail, Heart } from 'lucide-react';
 import confetti from 'canvas-confetti';
 import { TRIVIA_QUESTIONS } from '../data/content';
-import { FAN_CLUB_EMAIL } from '../config/site';
+import { submitForm } from '../lib/submitForm';
 import { PhoneInput } from './PhoneInput';
 import { COUNTRIES, guessCountry } from '../data/countries';
 
@@ -13,9 +13,10 @@ export const FanClubSection: React.FC = () => {
   const [memberPhone, setMemberPhone] = useState<string>('');
   const [phoneCountry, setPhoneCountry] = useState<string>(() => guessCountry());
   const [memberReason, setMemberReason] = useState<string>('');
+  const [memberAddress, setMemberAddress] = useState<string>('');
   const [consent, setConsent] = useState<boolean>(false);
   const [isClaimed, setIsClaimed] = useState<boolean>(false);
-  const [sendStatus, setSendStatus] = useState<'idle' | 'opened' | 'soon'>('idle');
+  const [sendStatus, setSendStatus] = useState<'idle' | 'sending' | 'sent' | 'error' | 'soon'>('idle');
 
   // Trivia State
   const [currentQuestion, setCurrentQuestion] = useState<number>(0);
@@ -26,35 +27,31 @@ export const FanClubSection: React.FC = () => {
 
   // Newsletter State
   const [newsletterEmail, setNewsletterEmail] = useState<string>('');
-  const [isSubscribed, setIsSubscribed] = useState<boolean>(false);
+  const [newsletterStatus, setNewsletterStatus] = useState<'idle' | 'sending' | 'sent' | 'error' | 'soon'>('idle');
 
-  // Claim the fan card and send the member's details by email
-  const handleClaimPass = (e: React.FormEvent) => {
+  // Claim the fan card and send the member's details straight to the management inbox
+  const handleClaimPass = async (e: React.FormEvent) => {
     e.preventDefault();
-    setIsClaimed(true);
-    confetti({
-      particleCount: 100,
-      spread: 80,
-      origin: { y: 0.6 },
-      colors: ['#fef08a', '#d4af37', '#10b981', '#06b6d4'],
-    });
-    if (!FAN_CLUB_EMAIL) {
-      setSendStatus('soon');
-      return;
-    }
-    const subject = encodeURIComponent(`Official Fan Club Sign-Up: ${memberName}`);
+    if (sendStatus === 'sending') return;
+    setSendStatus('sending');
     const dialCode = COUNTRIES.find((c) => c.iso === phoneCountry)?.dial ?? '';
-    const body = encodeURIComponent(
-      `Hello Management Team,\n\n` +
-      `A new fan has registered for the Leonardo DiCaprio Official Fan Club.\n\n` +
-      `• Member Name: ${memberName}\n` +
-      `• Member Email: ${memberEmail}\n` +
-      `• Phone Number: ${dialCode} ${memberPhone}\n\n` +
-      `Why they love Leonardo:\n${memberReason || '(None provided)'}\n\n` +
-      `--\nLeonardo DiCaprio Official · leonardodicaprioofficial.com`
-    );
-    window.location.href = `mailto:${FAN_CLUB_EMAIL}?subject=${subject}&body=${body}`;
-    setSendStatus('opened');
+    const result = await submitForm('fanclub', {
+      name: memberName,
+      email: memberEmail,
+      phone: `${dialCode} ${memberPhone}`.trim(),
+      address: memberAddress,
+      reason: memberReason || '(none provided)',
+    });
+    if (result.ok) {
+      setIsClaimed(true);
+      setSendStatus('sent');
+      confetti({ particleCount: 100, spread: 80, origin: { y: 0.6 }, colors: ['#fef08a', '#d4af37', '#10b981', '#06b6d4'] });
+    } else if (result.reason === 'not-configured') {
+      setIsClaimed(true);
+      setSendStatus('soon');
+    } else {
+      setSendStatus('error');
+    }
   };
 
   // Trivia Answer Select
@@ -91,15 +88,17 @@ export const FanClubSection: React.FC = () => {
     setQuizFinished(false);
   };
 
-  const handleNewsletterSubmit = (e: React.FormEvent) => {
+  const handleNewsletterSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!newsletterEmail) return;
-    setIsSubscribed(true);
-    if (!FAN_CLUB_EMAIL) return; // no inbox set up yet: show the "opening soon" message instead of a false confirmation
-    const subject = encodeURIComponent('Newsletter sign-up');
-    const body = encodeURIComponent(`Please add me to the newsletter.\n\nEmail: ${newsletterEmail}`);
-    window.location.href = `mailto:${FAN_CLUB_EMAIL}?subject=${subject}&body=${body}`;
-    confetti({ particleCount: 60, spread: 50 });
+    if (!newsletterEmail || newsletterStatus === 'sending') return;
+    setNewsletterStatus('sending');
+    const result = await submitForm('newsletter', { email: newsletterEmail });
+    if (result.ok) {
+      setNewsletterStatus('sent');
+      confetti({ particleCount: 60, spread: 50 });
+    } else {
+      setNewsletterStatus(result.reason === 'not-configured' ? 'soon' : 'error');
+    }
   };
 
   return (
@@ -211,6 +210,18 @@ export const FanClubSection: React.FC = () => {
                   />
                 </div>
                 <div>
+                  <label className="block text-[11px] font-mono text-slate-400 mb-1 text-left">Your postal address (to send your physical fan card)</label>
+                  <textarea
+                    required
+                    value={memberAddress}
+                    onChange={(e) => setMemberAddress(e.target.value)}
+                    placeholder="Street, city, postcode, country"
+                    rows={2}
+                    className="w-full px-4 py-2.5 rounded-xl bg-slate-900 border border-slate-700 text-sm focus:outline-none focus:border-amber-400 transition-colors font-sans resize-none"
+                    style={{ color: 'var(--text)' }}
+                  />
+                </div>
+                <div>
                   <label className="block text-[11px] font-mono text-slate-400 mb-1 text-left">Why do you love Leonardo DiCaprio?</label>
                   <textarea
                     required
@@ -232,14 +243,17 @@ export const FanClubSection: React.FC = () => {
                   className="w-full py-3 rounded-xl bg-gradient-to-r from-amber-400 to-yellow-500 hover:from-amber-300 hover:to-yellow-400 text-slate-950 font-bold text-xs tracking-wider uppercase flex items-center justify-center gap-2 shadow-lg shadow-amber-500/20 transition-all cursor-pointer"
                 >
                   {isClaimed ? <Heart className="w-4 h-4" /> : <Download className="w-4 h-4" />}
-                  <span>{isClaimed ? 'Fan card claimed!' : 'Claim my fan card'}</span>
+                  <span>{sendStatus === 'sending' ? 'Sending…' : isClaimed ? 'Fan card claimed!' : 'Claim my fan card'}</span>
                 </button>
 
-                {sendStatus === 'opened' && (
-                  <p className="text-[11px] text-emerald-400 text-left">Your email app should now open with your details ready to send. Welcome to the fan club!</p>
+                {sendStatus === 'sent' && (
+                  <p className="text-[11px] text-emerald-400 text-left">Thank you! Your details have been sent to the fan club team. Welcome to the fan club!</p>
                 )}
                 {sendStatus === 'soon' && (
                   <p className="text-[11px] text-amber-300 text-left">Your card is ready. Fan club sign-ups are opening soon, so we have not received your details yet.</p>
+                )}
+                {sendStatus === 'error' && (
+                  <p className="text-[11px] text-red-400 text-left">Sorry, something went wrong and your details were not sent. Please try again in a moment.</p>
                 )}
               </form>
             </div>
@@ -357,10 +371,10 @@ export const FanClubSection: React.FC = () => {
             Receive exclusive updates on upcoming film releases, film festival premieres, and urgent Re:wild conservation campaigns.
           </p>
 
-          {isSubscribed ? (
+          {newsletterStatus === 'sent' || newsletterStatus === 'soon' ? (
             <div className="p-4 rounded-xl bg-emerald-950/50 border border-emerald-500/40 text-xs text-emerald-300 font-mono animate-fadeIn">
-              {FAN_CLUB_EMAIL
-                ? 'Your email app should now open with your sign-up ready to send. Thank you!'
+              {newsletterStatus === 'sent'
+                ? 'You are signed up. Thank you!'
                 : 'Newsletter sign-ups are opening soon, so we have not saved your email yet. Please check back shortly.'}
             </div>
           ) : (
